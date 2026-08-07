@@ -1,0 +1,14 @@
+{
+  "name": "عيد ميلاد سعيد يا هبوشتي",
+  "short_name": "هبوشتي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f2f2",
+  "theme_color": "#f3f2f2",
+  "icons": [
+    { "src": "favicon.png", "sizes": "64x64", "type": "image/png" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
