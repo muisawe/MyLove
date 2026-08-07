@@ -1,50 +1,173 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+```html
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
   <title>إلى هبوشتي · وحدَها</title>
+
   <meta name="description" content="صفحةٌ لكِ كلَّ صباح، وعددٌ خاصٌّ في كلِّ ذكرى.">
+
+  <!-- منع محركات البحث من فهرسة الصفحة -->
   <meta name="googlebot" content="noindex, nofollow">
   <meta name="bingbot" content="noindex, nofollow">
+
+  <!-- إعدادات الصفحة -->
   <meta name="theme-color" content="#f3f2f2">
   <meta name="color-scheme" content="light">
+
+  <!-- الأيقونات -->
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
+
+  <!-- إعدادات الهاتف -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="هبوشتي">
+
+  <!-- ========================= -->
+  <!-- Open Graph - معاينة الرابط -->
+  <!-- ========================= -->
+
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ar_AR">
   <meta property="og:site_name" content="هبوشتي">
+
   <meta property="og:url" content="https://muisawe.github.io/MyLove/">
+
   <meta property="og:title" content="إلى هبوشتي · وحدَها">
-  <meta property="og:description" content="صفحةٌ لكِ كلَّ صباح، وعددٌ خاصٌّ في كلِّ ذكرى.">
-  <meta property="og:image" content="https://muisawe.github.io/MyLove/og.png?v=2">
-  <meta property="og:image:secure_url" content="https://muisawe.github.io/MyLove/og.png?v=2">
+
+  <meta
+    property="og:description"
+    content="صفحةٌ لكِ كلَّ صباح، وعددٌ خاصٌّ في كلِّ ذكرى."
+  >
+
+  <!-- صورة المعاينة -->
+  <meta
+    property="og:image"
+    content="https://muisawe.github.io/MyLove/og.png"
+  >
+
+  <meta
+    property="og:image:secure_url"
+    content="https://muisawe.github.io/MyLove/og.png"
+  >
+
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="غلافُ جريدةٍ بنسخةٍ واحدة — إلى هبوشتي وحدَها">
+
+  <meta
+    property="og:image:alt"
+    content="غلافُ جريدةٍ بنسخةٍ واحدة — إلى هبوشتي وحدَها"
+  >
+
+  <!-- ========================= -->
+  <!-- Twitter / X -->
+  <!-- ========================= -->
+
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="إلى هبوشتي · وحدَها">
-  <meta name="twitter:description" content="صفحةٌ لكِ كلَّ صباح، وعددٌ خاصٌّ في كلِّ ذكرى.">
-  <meta name="twitter:image" content="https://muisawe.github.io/MyLove/og.png?v=2">
+
+  <meta
+    name="twitter:title"
+    content="إلى هبوشتي · وحدَها"
+  >
+
+  <meta
+    name="twitter:description"
+    content="صفحةٌ لكِ كلَّ صباح، وعددٌ خاصٌّ في كلِّ ذكرى."
+  >
+
+  <meta
+    name="twitter:image"
+    content="https://muisawe.github.io/MyLove/og.png"
+  >
+
+  <!-- ========================= -->
+  <!-- Bundler styles -->
+  <!-- ========================= -->
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #f3f2f2; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-    #__bundler_loading { position: fixed; bottom: 20px; right: 20px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; color: #666; background: #fff; padding: 8px 14px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); z-index: 10000; }
-    #__bundler_thumbnail { position: fixed; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f3f2f2; z-index: 9999; }
-    #__bundler_thumbnail svg { width: 100%; height: 100%; object-fit: contain; }
-    #__bundler_placeholder { color: #999; font-size: 14px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f3f2f2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    #__bundler_loading {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #666;
+      background: #fff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      z-index: 10000;
+    }
+
+    #__bundler_thumbnail {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f3f2f2;
+      z-index: 9999;
+    }
+
+    #__bundler_thumbnail svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    #__bundler_placeholder {
+      color: #999;
+      font-size: 14px;
+    }
   </style>
+
   <noscript>
-    <style>#__bundler_loading { display: none; }</style>
-    <div style="position:fixed;bottom:12px;left:12px;font:13px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;color:#999;background:rgba(255,255,255,0.9);padding:6px 12px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:10000;">
+    <style>
+      #__bundler_loading {
+        display: none;
+      }
+    </style>
+
+    <div
+      style="
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+        font: 13px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;
+        color: #999;
+        background: rgba(255,255,255,0.9);
+        padding: 6px 12px;
+        border-radius: 6px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        z-index: 10000;
+      "
+    >
       هذه الصفحة تحتاج إلى تفعيل JavaScript كي تُعرَض.
     </div>
   </noscript>
 </head>
+```
+
 <body>
   <div id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><rect width="200" height="200" fill="#f3f2f2"></rect><rect x="60" y="92" width="80" height="5" fill="#201e1d"></rect><text x="100" y="78" text-anchor="middle" font-family="Georgia,serif" font-size="46" fill="#201e1d">هـ</text><circle cx="100" cy="128" r="8" fill="#d6006c"></circle></svg></div>
   <div id="__bundler_loading">جارٍ الفتح…</div>
