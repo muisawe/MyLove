@@ -22,3 +22,145 @@ a:hover{color:var(--color-accent-2)}
 @keyframes hb-drift{from{transform:translateY(0)}to{transform:translateY(-7px)}}
 @media (forced-colors: active){button{border:2px solid ButtonText}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.001ms!important}}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   تصحيحُ العربية فوق مكتبة Broadsheet
+
+   المكتبة مكتوبةٌ للاتينية، وفيها ثلاث قواعد تُخرِّج العربية:
+
+     letter-spacing   يفكّ وصلَ الحروف — الحرف العربيّ يتّصل بما بعده، والتباعد
+                      يقطع الوصلة فتصير الكلمة حروفاً متناثرة. هذه عِلّةٌ
+                      أُصلحت مرّةً في 9756b8c، والمكتبة تعيدها من الخلف.
+     text-transform   uppercase بلا معنى في العربية — لا حالة أحرف أصلاً.
+     text-align:left  مقلوبٌ في RTL.
+
+   الصفحة اليوم تستعمل كلاساً واحداً من ثمانيةٍ وثلاثين. وكلّ باب قادم
+   (القسائم، الأرشيف، البريد، بالأرقام…) سيستعمل .card و .table و .tag و
+   .input و .btn — فتُكتب هذه الطبقة مرّةً هنا، قبل أوّل إعادة استخدام.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+[dir="rtl"] :is(h1,h2,h3,h4,h5,h6,
+                .card-kicker,.card-title,.tag,.table th,
+                .btn,.dialog-title,.nav-brand,.seg-opt){
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* المكتبة تُثبّت رؤوس الجداول يساراً، والفاصل بين خانات المُجزَّأ على اليسار */
+[dir="rtl"] .table th { text-align: right }
+[dir="rtl"] .seg-opt + .seg-opt {
+  border-left: 0;
+  border-right: 1px solid var(--color-divider);
+}
+
+/* المسافة بين الكلمات هي البديل الصحيح للتباعد في العربية: تُوسّع النصّ
+   بلا أن تمسّ داخل الكلمة. تُستعمل سطرياً في القالب، وتُتاح هنا كصنف. */
+.ar-track { word-spacing: .14em }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   الطبعة الورقية
+
+   الطباعة كانت مكسورة تماماً قبل هذه الكتلة، والسبب أعمق من overflow:
+   سلسلةٌ من العوائق —
+     html,body{overflow:hidden}
+       └ الجذر height:100dvh; overflow:hidden
+           └ المُمرِّر position:absolute; inset:0; overflow-y:auto
+               └ والغلاف طبقةٌ فوقه بـ transform:rotateX
+
+   والعلّة الحاسمة: WebKit لا يُجزّئ عنصراً position:absolute عبر الصفحات —
+   فتُطبع صفحةٌ واحدة ويُسقَط الباقي صمتاً. overflow:visible وحدَه لا يكفي؛
+   يلزم position:static. و transform على أيّ سلف يُنشئ كتلةَ احتواء تمنع
+   التجزئة كذلك.
+
+   وكلّ سطرٍ هنا يحمل !important لسببٍ محدَّد: dc-runtime يحقن FULL_PAGE_CSS
+   (html,body{height:100%}) بـ head.append، أي بعد هذه الورقة، فيغلبها.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media print {
+  @page { size: A4; margin: 14mm }
+
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    background: #fff !important;
+  }
+
+  #dc-root, #dc-root > .sc-host {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* صندوق الجذر ذو 100dvh — الوحدات المرئية بلا معنى على الورق.
+     ويحمل background:var(--color-bg) سطرياً: ورقٌ رماديّ مطبوعٌ على ورقٍ
+     أبيض يعني تغطيةَ حبرٍ كاملة لكلّ صفحة. الورقةُ نفسها هي الورق. */
+  #dc-root > .sc-host > * {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    transform: none !important;
+    background: transparent !important;
+  }
+
+  /* ← القاعدة الحاملة. بدونها تُطبع صفحةٌ واحدة ويُفقد العدد كلُّه. */
+  .hb-scroll {
+    position: static !important;
+    inset: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  /* حشو الشاشة مضبوطٌ للإبهام لا للورق: padding العلويّ يتّكل على
+     env(safe-area-inset-top) وهي صفرٌ في الطباعة فيترك فجوةً غريبة، والحشو
+     الجانبيّ clamp(20px,12vw,300px) يُخلّي ثلث الورقة عموداً فارغاً.
+     الهوامش على الورق يملكها @page وحدَه. */
+  .hb-scroll > * {
+    padding: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  /* الغلاف ليس جزءاً من العدد المطبوع، وزرّ الصوت لا معنى له على ورقة،
+     وتقليبُ الصفحات لا معنى له حين تكون الصفحات كلُّها بين يديها */
+  .hb-cover, .hb-nav, #__bgm_host, #__bgm_btn { display: none !important }
+
+  /* ← هنا يفترق الورقيّ عن الإلكترونيّ: الشاشة تعرض صفحةً واحدة، والورقة
+     تحمل العدد كلَّه — كلُّ صفحةٍ تبدأ ورقةً جديدة. */
+  [data-page] {
+    display: block !important;
+    break-before: page;
+    page-break-before: always;
+  }
+  [data-page="1"] { break-before: auto; page-break-before: auto }
+
+  /* reveal() يكتب opacity:0 سطرياً — والسطريّ لا يُهزم إلّا بـ !important */
+  [data-rise] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  [data-rise], figure, .cmyk, .cmyk-num, .card, .table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  h1, h2, h3 { break-after: avoid-page; page-break-after: avoid }
+  p, li { orphans: 3; widows: 3 }
+
+  /* WebKit يرسم مرشّحات url() بدقّة الشاشة لا الطابعة، ويُسقط mix-blend-mode
+     أحياناً في الطباعة. وشاشةُ النقاط ٣px تُنتج تموّجَ مواريه عند ٣٠٠dpi.
+     فتُطبع الصورة الصريحة بدل الألواح. */
+  .cmyk .print { filter: none !important }
+  .cmyk::after { display: none !important }
+  .cmyk img:first-child { opacity: 1 !important }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+  }
+}

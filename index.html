@@ -88,6 +88,20 @@
   <link rel="stylesheet" href="styles/fonts.css">
   <link rel="stylesheet" href="styles/page.css">
 
+  <!-- ═══ المحتوى ═══════════════════════════════════════════════════════
+       كلّ نصّ في الصفحة يعيش هنا، لا داخل الكود. تُحرَّر هذه الملفات باليد
+       وحدَها: تلوين نحويّ حقيقي، و diff لكلّ باب على حدة، ولا خطرَ أن تُنهي
+       كلمةٌ في نصٍّ عربيّ كتلةَ <script> فتقتل الصفحة.
+
+       الترتيب: قبل المحرّك عمداً — فأيّ خطأ نحويّ يظهر في الكونسول قبل
+       الإقلاع، لا مدفوناً بعده. (تقنياً يكفي أن تكون في الوثيقة: boot()
+       يعمل عند DOMContentLoaded فتسبقه كلُّ السكربتات العادية و defer.
+       أمّا async فغير آمنة — قد تصل بعد أوّل تصيير.)
+  -->
+  <script src="content/occasions.js"></script>
+  <script src="content/days.js"></script>
+  <script src="content/themes.js"></script>
+
   <!-- ═══ المحرّك ═══════════════════════════════════════════════════════
        الترتيب إلزاميّ. dc-runtime يستدعي loadReactUmd() الذي ينسحب فوراً
        متى وجد window.React و window.ReactDOM — فلا يُلمس unpkg إطلاقاً،
@@ -134,9 +148,12 @@
 
 <div dir="rtl" ref="{{ rootRef }}" style="position:relative;height:100dvh;min-height:100svh;width:100%;-webkit-text-size-adjust:100%;overflow:hidden;background:var(--color-bg);color:var(--color-text);font-family:'Amiri',var(--font-body),serif;--spot:var(--color-accent-2)">
 
-  <div ref="{{ scrollRef }}" style="position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+  <div class="hb-scroll" ref="{{ scrollRef }}" style="position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
 
     <div style="position:relative;max-width:1180px;margin:0 auto;padding:calc(clamp(26px,6vw,88px) + env(safe-area-inset-top)) clamp(20px,6vw,120px) 0 clamp(20px,12vw,300px)">
+
+      <!-- ═══ الصفحة الأولى ═══ -->
+      <div data-page="1" style="display:{{ pg1 }}">
 
       <div data-rise="" style="display:flex;flex-direction:column;gap:0">
         <div style="display:flex;align-items:baseline;gap:14px;font-size:13px;word-spacing:.2em;color:var(--color-neutral-600)">
@@ -171,8 +188,40 @@
         <p style="margin:0;font-style:italic;font-weight:700;font-size:clamp(30px,5.4vw,68px);line-height:1.45;color:var(--spot);text-wrap:pretty">أنتِ لستِ في قلبي… أنتِ قلبي.</p>
       </div>
 
-      <div data-rise="" style="margin-top:clamp(58px,9vw,130px);display:flex;flex-direction:column;gap:clamp(14px,1.6vw,20px);max-width:620px">
+      <!-- فهرس العدد — الصفحة الأولى في الجريدة تحمل الترويسة والخبر والفهرس،
+           لا كلَّ شيء. هذا ما يدلّها على ما في الداخل. -->
+      <div data-rise="" style="margin-top:clamp(58px,9vw,130px);display:flex;flex-direction:column;gap:clamp(12px,1.4vw,18px);max-width:620px">
         <div style="font-size:12px;word-spacing:.26em;color:var(--color-accent)">في هذا العدد</div>
+        <div style="height:1px;background:var(--color-text)"></div>
+        <button type="button" sc-camel-on-click="{{ onP2 }}" style="all:unset;cursor:pointer;display:flex;align-items:baseline;gap:16px;padding:9px 0;border-bottom:1px solid var(--color-neutral-300)" style-hover="color:var(--color-accent)">
+          <span style="color:var(--color-neutral-500);font-size:.8em;font-family:'Amiri',serif">٠٢</span>
+          <span style="flex:1 1 auto;font-size:clamp(17px,1.9vw,22px);font-family:'Amiri',serif">{{ p2Name }}</span>
+          <span style="font-size:12px;color:var(--color-neutral-600);font-family:'Amiri',serif">{{ p2Hint }}</span>
+        </button>
+        <button type="button" sc-camel-on-click="{{ onP3 }}" style="all:unset;cursor:pointer;display:flex;align-items:baseline;gap:16px;padding:9px 0;border-bottom:1px solid var(--color-neutral-300)" style-hover="color:var(--color-accent)">
+          <span style="color:var(--color-neutral-500);font-size:.8em;font-family:'Amiri',serif">٠٣</span>
+          <span style="flex:1 1 auto;font-size:clamp(17px,1.9vw,22px);font-family:'Amiri',serif">{{ p3Name }}</span>
+          <span style="font-size:12px;color:var(--color-neutral-600);font-family:'Amiri',serif">{{ p3Hint }}</span>
+        </button>
+      </div>
+
+      </div><!-- /الصفحة الأولى -->
+
+      <!-- ═══ الصفحة الثانية · نحن ═══ -->
+      <div data-page="2" style="display:{{ pg2 }}">
+
+      <!-- الترويسة الجارية: في الجرائد لا تبدأ الصفحة الداخلية عاريةً — تحمل
+           اسم الجريدة ورقم الصفحة والعدد، فتُعرف الورقةُ حيثما فُتحت. -->
+      <div style="display:flex;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:1px solid var(--color-text);font-size:12px;word-spacing:.18em;color:var(--color-neutral-600)">
+        <span style="font-weight:700;color:var(--color-text)">بحبّك يا هبوشتي</span>
+        <span style="flex:1 1 auto"></span>
+        <span>{{ occasionName }}</span>
+        <span style="color:var(--spot)">◆</span>
+        <span>{{ pageOf }}</span>
+      </div>
+
+      <div data-rise="" style="margin-top:clamp(34px,5vw,70px);display:flex;flex-direction:column;gap:clamp(14px,1.6vw,20px);max-width:620px">
+        <div style="font-size:12px;word-spacing:.26em;color:var(--color-accent)">الخطُّ الزمنيّ</div>
         <div style="height:1px;background:var(--color-neutral-300)"></div>
         <div style="display:grid;gap:clamp(14px,1.6vw,20px)">
           <div style="display:flex;align-items:baseline;gap:16px;font-size:clamp(18px,2vw,24px)"><span style="color:var(--color-neutral-500);font-size:.72em">٠١</span><div><div>١٧ فبراير ٢٠٢٦ — يومُ قلتِ نعم</div><div style="font-size:13px;color:var(--color-neutral-600);margin-top:5px">{{ sinceEngagement }}</div></div></div>
@@ -191,7 +240,20 @@
         </div>
       </div>
 
-      <div data-rise="" style="margin-top:clamp(60px,10vw,140px);display:flex;flex-direction:column;gap:clamp(16px,2vw,26px);max-width:640px">
+      </div><!-- /الصفحة الثانية -->
+
+      <!-- ═══ الصفحة الأخيرة ═══ -->
+      <div data-page="3" style="display:{{ pg3 }}">
+
+      <div style="display:flex;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:1px solid var(--color-text);font-size:12px;word-spacing:.18em;color:var(--color-neutral-600)">
+        <span style="font-weight:700;color:var(--color-text)">بحبّك يا هبوشتي</span>
+        <span style="flex:1 1 auto"></span>
+        <span>{{ occasionName }}</span>
+        <span style="color:var(--spot)">◆</span>
+        <span>{{ pageOf }}</span>
+      </div>
+
+      <div data-rise="" style="margin-top:clamp(34px,5vw,70px);display:flex;flex-direction:column;gap:clamp(16px,2vw,26px);max-width:640px">
         <div style="font-size:12px;word-spacing:.26em;color:var(--spot)">الكلمةُ الأخيرة</div>
         <p style="margin:0;font-size:clamp(20px,2.3vw,29px);line-height:1.8">كلُّ عامٍ وأنتِ حبيبتي، وكلُّ عامٍ وأنا أكثرُ يقيناً أنّني اخترتُ صحّ. {{ occasionLine }}</p>
         <p style="margin:0;font-family:'Amiri',serif;font-style:italic;font-weight:700;font-size:clamp(28px,4.6vw,56px);line-height:1.5">بحبّك… دائماً.</p>
@@ -202,10 +264,32 @@
         <div style="font-size:12px;word-spacing:.24em;color:var(--color-neutral-600)">طُوِيَ هذا العدد بيدي — والقادمُ أيضاً</div>
         <div style="width:9px;height:9px;background:var(--spot);border-radius:50%"></div>
       </div>
+
+      </div><!-- /الصفحة الأخيرة -->
+
+      <!-- ═══ تقليب الصفحات ═══
+           شريطٌ واحد يخدم كلّ الصفحات — يقرأ الأرقام من renderVals، فلا يتكرّر
+           ثلاث مرّات ولا يحتاج تعديلاً عند إضافة صفحة.
+           يُخفى في الطباعة: الورقة تحمل الصفحات كلَّها فلا معنى للتقليب. -->
+      <div class="hb-nav" style="margin:clamp(40px,6vw,80px) 0 clamp(30px,5vw,60px);padding-top:clamp(18px,2.4vw,26px);border-top:4px solid var(--color-text);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <sc-if value="{{ hasPrev }}" hint-placeholder-val="{{ true }}">
+          <button type="button" sc-camel-on-click="{{ onPrev }}" style="all:unset;cursor:pointer;font-family:'Amiri',serif;font-size:clamp(15px,1.7vw,19px);color:var(--color-accent);display:flex;align-items:baseline;gap:8px" style-hover="color:var(--color-accent-700)" style-active="transform:translateX(2px)">
+            <span aria-hidden="true">→</span><span>{{ prevName }}</span>
+          </button>
+        </sc-if>
+        <div style="flex:1 1 auto"></div>
+        <div style="font-size:12px;word-spacing:.2em;color:var(--color-neutral-600);font-family:'Amiri',serif">{{ pageOf }}</div>
+        <div style="flex:1 1 auto"></div>
+        <sc-if value="{{ hasNext }}" hint-placeholder-val="{{ true }}">
+          <button type="button" sc-camel-on-click="{{ onNext }}" style="all:unset;cursor:pointer;font-family:'Amiri',serif;font-size:clamp(15px,1.7vw,19px);color:var(--color-accent);display:flex;align-items:baseline;gap:8px" style-hover="color:var(--color-accent-700)" style-active="transform:translateX(-2px)">
+            <span>{{ nextName }}</span><span aria-hidden="true">←</span>
+          </button>
+        </sc-if>
+      </div>
     </div>
   </div>
 
-  <div ref="{{ coverRef }}" style="position:absolute;inset:0;z-index:6;pointer-events:{{ coverPointer }};background:var(--color-bg);transform-origin:50% 0%;transform:{{ coverTransform }};opacity:{{ coverOpacity }};transition:transform 1.15s cubic-bezier(.72,-0.02,.2,1), opacity .7s ease .45s;box-shadow:0 30px 80px rgba(32,30,29,.16);display:flex;overflow-y:auto;overscroll-behavior:contain;padding:clamp(18px,min(6vw,4vh),80px)">
+  <div class="hb-cover" ref="{{ coverRef }}" style="position:absolute;inset:0;z-index:6;pointer-events:{{ coverPointer }};background:var(--color-bg);transform-origin:50% 0%;transform:{{ coverTransform }};opacity:{{ coverOpacity }};transition:transform 1.15s cubic-bezier(.72,-0.02,.2,1), opacity .7s ease .45s;box-shadow:0 30px 80px rgba(32,30,29,.16);display:flex;overflow-y:auto;overscroll-behavior:contain;padding:clamp(18px,min(6vw,4vh),80px)">
     <div style="position:absolute;top:22px;right:22px;width:26px;height:26px;border-top:1px solid var(--color-accent);border-right:1px solid var(--color-accent)"></div>
     <div style="position:absolute;bottom:22px;left:22px;width:26px;height:26px;border-bottom:1px solid var(--color-accent-2);border-left:1px solid var(--color-accent-2)"></div>
 
@@ -262,47 +346,44 @@
 
 <script type="text/x-dc" data-dc-script data-props='{"previewUnlocked":{"editor":"boolean","default":false,"tsType":"boolean","section":"القفل"},"motion":{"editor":"boolean","default":true,"tsType":"boolean","section":"الحركة"},"spotAccent":{"editor":"enum","options":["أرجواني","سماوي"],"default":"سماوي","tsType":"string","section":"اللون"}}'>
 class Component extends DCLogic {
-  state = { opened: false, now: Date.now() };
+  state = { opened: false, now: Date.now(), page: 0 };
+
+  // ══ المحتوى ══════════════════════════════════════════════════════════════
+  // كلّ النصوص في content/*.js، تُحمَّل بوسوم <script> عادية في الرأس. المحرّك
+  // يُقلع عند DOMContentLoaded، فكلُّها جاهزة قبل أوّل تصيير — بلا وميضٍ ولا fetch.
+  //
+  // الغرض من هذا الوصول: خطأٌ مطبعيّ في ملفٍّ واحد أثناء التحرير اليدويّ يجب
+  // ألّا يُسقط الصفحة. الملفّ الذي لا يُحلَّل لا يُنفَّذ، فمفتاحه يغيب — فنُرجع
+  // البديل ونصرخ في الكونسول مرّةً واحدة، ولا ننهار.
+  //
+  // ولا يُقرأ window.__content مباشرةً في أيّ موضع آخر. أبداً.
+  __warned = {};
+  content(key, fallback) {
+    const box = (typeof window !== 'undefined' && window.__content) || {};
+    const v = box[key];
+    const ok = Array.isArray(v) ? v.length > 0
+      : (v && typeof v === 'object') ? Object.keys(v).length > 0
+      : false;
+    if (ok) return v;
+    if (!this.__warned[key]) {
+      this.__warned[key] = 1;
+      try { console.error('[هبوشتي] طاقم محتوى مفقود أو تالف: ' + key + ' — تحقّق من content/'); } catch (e) {}
+    }
+    return fallback;
+  }
+
+  // بدائل الطوارئ. ليست محتوىً بديلاً — بل الحدُّ الأدنى الذي يُبقي الصفحة
+  // واقفةً وتقول شيئاً صادقاً، ريثما يُصلَح الملفّ.
+  FALLBACK_OCCASIONS = [{ key: 'birthday', m: 7, d: 15, name: 'عيدُ ميلادكِ', date: '١٥ أغسطس', from: null }];
+  FALLBACK_PAIR = { v: 'الحبّ', p: 'بحبّك يا هبوشتي.' };
+  FALLBACK_THEME = { n: 'ورق', a: '#0088b0', b: '#d6006c', bg: '#f3f2f2' };
 
   // ── المناسبات الثلاث: مصدرٌ واحد للحقيقة، والشهر بترقيم جافاسكربت ──
-  occasions() {
-    return [
-      { key: 'engagement', m: 1, d: 17, name: 'ذكرى الخطبة', date: '١٧ فبراير', from: 2026 },
-      { key: 'wedding', m: 5, d: 1, name: 'ذكرى زواجنا', date: '١ يونيو', from: 2026 },
-      { key: 'birthday', m: 7, d: 15, name: 'عيدُ ميلادكِ', date: '١٥ أغسطس', from: null }
-    ];
-  }
+  occasions() { return this.content('occasions', this.FALLBACK_OCCASIONS); }
 
   at(o, y) { return new Date(y, o.m, o.d, 0, 0, 0).getTime(); }
 
-  occasionCopy() {
-    return {
-      engagement: {
-        lockedTitle: 'في السابع عشر…',
-        inName: 'ذكرى خطبتنا',
-        openTitle: 'ذكرى أوّلِ نعم',
-        openDeck: 'في مثلِ هذا اليوم قلتِ نعم، فبدأ كلُّ شيء.',
-        button: 'افتحي العدد',
-        line: 'ذكرى خِطبتنا ليست يوماً في التقويم — إنّها اليومُ الذي بدأ فيه كلُّ ما بعدَه.'
-      },
-      wedding: {
-        lockedTitle: 'في الأوّلِ من يونيو…',
-        inName: 'ذكرى زواجنا',
-        openTitle: 'كلُّ عامٍ ونحن معاً',
-        openDeck: 'في مثلِ هذا اليوم صار اسمُكِ معي، فلم أعُد أُحصي البدايات.',
-        button: 'افتحي العدد',
-        line: 'ذكرى زواجنا ليست يوماً في التقويم — إنّها اليومُ الذي صار لي فيه بيت.'
-      },
-      birthday: {
-        lockedTitle: 'قريباً جدّاً…',
-        inName: 'عيدِ ميلادكِ',
-        openTitle: 'عيد ميلاد سعيد',
-        openDeck: 'عددٌ خاصٌّ صدر لكِ اليوم. اقرئيه على مَهَل، ثمَّ عودي غداً — الصفحةُ تتبدَّل.',
-        button: 'افتحي البطاقة',
-        line: 'عيدُ ميلادكِ ليس يوماً في التقويم — إنه اليومُ الذي أشكرُ فيه العالمَ كلَّه.'
-      }
-    };
-  }
+  occasionCopy() { return this.content('occasionCopy', {}); }
 
   // صياغة تصحُّ في كل النطاقات: ١، ٢، ٣–١٠، ١١ فما فوق.
   ar(n) { return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[+d]); }
@@ -373,7 +454,9 @@ class Component extends DCLogic {
     return best;
   }
 
-  target() { return this.nextOccasion().t; }
+  // nextOccasion تُرجع null إن خلت المناسبات (ملفُّ محتوىً تالف). العدّاد
+  // عندئذٍ يقرأ صفراً بدل أن يرمي ويُسقط التصيير.
+  target() { const n = this.nextOccasion(); return n ? n.t : this.state.now; }
   rootRef = React.createRef();
   coverRef = React.createRef();
   scrollRef = React.createRef();
@@ -440,6 +523,50 @@ class Component extends DCLogic {
     root.style.setProperty("--spot", spot);
   }
 
+  // ══ صفحات العدد ══════════════════════════════════════════════════════════
+  // الجرائد لها صفحات. ثمانية أقسامٍ في لفافةٍ واحدة طويلةٌ على الهاتف أصلاً،
+  // وما هو قادم يجعلها نفقاً. فالعدد يُقلَّب كما تُقلَّب الجريدة.
+  //
+  // الصفحات تبقى في الشجرة وتُخفى بـ display لا تُنزع — لأنّ ورقة الطباعة
+  // تطبعها كلَّها ([data-page]{display:block!important})، وهذا بالضبط الفرق
+  // بين الطبعة الورقية والإلكترونية.
+  //
+  // الترتيب هنا بيانات: إضافة صفحةٍ سطرٌ واحد، لا إعادة هيكلة.
+  pages() {
+    return [
+      { n: 1, name: 'الصفحة الأولى', hint: 'الترويسة والخبر' },
+      { n: 2, name: 'نحن', hint: 'الخطُّ الزمنيّ والأبواب الثابتة' },
+      { n: 3, name: 'الصفحة الأخيرة', hint: 'الكلمةُ الأخيرة' }
+    ];
+  }
+
+  pageCount() { return this.pages().length; }
+
+  goPage = (n) => {
+    const max = this.pageCount() - 1;
+    const next = Math.min(max, Math.max(0, n));
+    if (next === this.state.page) return;
+    this.setState({ page: next }, () => {
+      const scroll = this.scrollRef.current;
+      if (scroll) {
+        // الحاوية scroll-behavior:smooth — بدون التعطيل المؤقّت تنزلق
+        // الصفحةُ الجديدة من قاع السابقة، ثوانيَ من التمرير بلا معنى.
+        const prev = scroll.style.scrollBehavior;
+        scroll.style.scrollBehavior = 'auto';
+        scroll.scrollTop = 0;
+        scroll.style.scrollBehavior = prev;
+      }
+      // الأقسام الجديدة ظهرت للتوّ ولم يرصدها المراقب السابق — يُعاد تسليحه.
+      this.reveal();
+    });
+  };
+
+  nextPage = () => this.goPage(this.state.page + 1);
+  prevPage = () => this.goPage(this.state.page - 1);
+  toPage1 = () => this.goPage(0);
+  toPage2 = () => this.goPage(1);
+  toPage3 = () => this.goPage(2);
+
   open = () => {
     if (this.state.opened || !this.isUnlocked()) return;
     // لا نكتب العَلَم في وضع المعاينة، وإلّا بقيت البطاقة مفتوحةً بعدها.
@@ -461,7 +588,14 @@ class Component extends DCLogic {
   reveal() {
     const root = this.scrollRef.current;
     if (!root) return;
-    const els = Array.from(root.querySelectorAll("[data-rise]"));
+    // كان هذا المراقب يُنشأ ولا يُفصل أبداً. لم يضرّ ما دام open() يستدعي
+    // reveal مرّةً واحدة — لكنّ تقليب الصفحات يستدعيها في كلّ صفحة، فيتراكم
+    // مراقبٌ لكلّ نداء، وكلُّهم يتسابقون على العقد نفسها بتدرّج ٩٠ مللي.
+    if (this.riseIO) { this.riseIO.disconnect(); this.riseIO = null; }
+    // الأقسام المخفيّة (صفحاتٌ أخرى) لا تُرصد: IntersectionObserver لا يُبلّغ
+    // عن display:none أصلاً، وإدراجها يجعل فهرس التدرّج يقفز فجوات.
+    const els = Array.from(root.querySelectorAll("[data-rise]"))
+      .filter(el => el.offsetParent !== null || el.getClientRects().length);
     if (this.props.motion === false) { els.forEach(el => { el.style.opacity = "1"; el.style.transform = "none"; }); return; }
     // ثبّت حالة الإخفاء أولاً بلا انتقال، ثمّ اسحب التخطيط، ثمّ سلِّح
     // الانتقال — وإلّا تحرّك الإخفاءُ نفسُه وارتدّ المحتوى بدل أن يصعد.
@@ -483,6 +617,7 @@ class Component extends DCLogic {
       });
     }, { root, threshold: 0.15 });
     els.forEach(el => io.observe(el));
+    this.riseIO = io;
   }
 
   // مهلة أسبوع بعد المناسبة: انتزاعُ الهديّة صباحَ الغد أسوأ من ألّا تُقفل،
@@ -509,59 +644,11 @@ class Component extends DCLogic {
   }
 
   // ── قيمة وعبارة وثيم لكل يوم، تدور بالتقويم فلا تتكرَّر بين يومٍ وتاليه ──
-  dayPairs() {
-    return [
-      { v: 'الصَّبر', p: 'صبرتُ على أيامٍ كثيرة، ولم أصبر يوماً واحداً على غيابكِ.' },
-      { v: 'اللُّطف', p: 'ألطفُ ما فيَّ تعلَّمتُه منكِ، وأنتِ لا تدرين.' },
-      { v: 'الصِّدق', p: 'لا أُجيدُ التمثيلَ معكِ؛ وجهي يفضحُني كلَّما مررتِ.' },
-      { v: 'الوفاء', p: 'لو خُيِّرتُ بين كلِّ الطُّرق، لاخترتُ الطريقَ التي تنتهي عندكِ.' },
-      { v: 'الامتنان', p: 'أشكرُ الصُّدفةَ التي جاءت بكِ، وأشكرُ نفسي لأنّي لم أُفلِت يدَكِ بعدها.' },
-      { v: 'الرِّفق', p: 'إن تعِبتِ، ضَعي رأسَكِ هنا؛ والباقي عليَّ.' },
-      { v: 'السَّكينة', p: 'عندكِ وحدَكِ يهدأُ الضجيجُ الذي أحملُه في صدري.' },
-      { v: 'الحِلم', p: 'أغضبُ من العالمِ كلِّه، ثمَّ يكفي صوتُكِ ليُطفئني.' },
-      { v: 'الكَرَم', p: 'أُعطيكِ من وقتي أجملَه، ومن قلبي كلَّه.' },
-      { v: 'الإصغاء', p: 'احكي لي كلَّ شيء، حتى ما تظنّينه صغيراً؛ أنا أُنصتُ للتفاصيل.' },
-      { v: 'الأمان', p: 'كوني كما أنتِ تماماً؛ هنا لا أحدَ يُحاسبُكِ.' },
-      { v: 'الرِّضا', p: 'لا أطلبُ من الدنيا شيئاً بعدَ أن أعطتني إيّاكِ.' },
-      { v: 'العطاء', p: 'أجملُ ما أملكُ هو ما أُنفقُه عليكِ.' },
-      { v: 'الثِّقة', p: 'أُسلِّمُكِ قلبي وأنا مطمئنّ؛ أنتِ أرحمُ به منّي.' },
-      { v: 'الحنان', p: 'يدُكِ على كتفي تُصلحُ ما أفسدَه يومٌ كامل.' },
-      { v: 'التَّسامح', p: 'لا أُحصي عليكِ زلَّةً؛ أُحصي لكِ الجميلَ وحدَه.' },
-      { v: 'الاحتواء', p: 'إذا ضاقت بكِ الدنيا، فصدري أوسعُ منها.' },
-      { v: 'الشَّغف', p: 'في كلِّ مرَّةٍ أراكِ فيها، أراكِ للمرَّة الأولى.' },
-      { v: 'الأُنس', p: 'أوحشُ الأماكنِ تصيرُ أليفةً إن كنتِ فيها.' },
-      { v: 'الوَفرة', p: 'أنا غنيٌّ جداً؛ عندي أنتِ.' },
-      { v: 'الصَّفاء', p: 'لا شيءَ بيننا مُعكَّر، ولا أُريدُه أن يكون.' },
-      { v: 'الوَداعة', p: 'أُحبُّ فيكِ هذا الهدوءَ الذي يُشبه الصباح.' },
-      { v: 'الوِفاق', p: 'نختلفُ أحياناً، ثمَّ نعودُ أقربَ ممّا كنّا.' },
-      { v: 'السَّند', p: 'إن سقطَ كلُّ شيء، فأنا واقفٌ خلفَكِ.' },
-      { v: 'البهجة', p: 'ضحكتُكِ هي أفضلُ خبرٍ يصلُني في اليوم.' },
-      { v: 'الطُّمأنينة', p: 'نامي هانئةً؛ أنتِ في بالِ مَن يُحبُّكِ.' },
-      { v: 'الإخلاص', p: 'قلبي بيتٌ بغرفةٍ واحدة، وأنتِ ساكنتُها.' },
-      { v: 'القُرب', p: 'البُعدُ مسافةٌ على الخريطة فقط؛ أنتِ هنا دائماً.' },
-      { v: 'الدِّفء', p: 'في أبردِ الأيام، تكفيني فكرةُ أنَّكِ موجودةٌ.' },
-      { v: 'العِشرة', p: 'أُريدُ أن أشيخَ وأنا ما زلتُ مُمسكاً بيدِكِ.' }
-    ];
-  }
+  // تُستدعيان من renderVals كلَّ ثانية، فلا يجوز أن تُولّدا مصفوفةً جديدة في
+  // كلّ نداء. content() يُرجع المرجع نفسه من window.__content — لا نسخةً منه.
+  dayPairs() { return this.content('dayPairs', []); }
 
-  dayThemes() {
-    return [
-      { n: 'ورد وذهب', a: '#c2185b', b: '#b8860b', bg: '#fdf7f4' },
-      { n: 'بحر وشمس', a: '#0f7fa3', b: '#e29a34', bg: '#f3f8fa' },
-      { n: 'بنفسج', a: '#6a4c93', b: '#d6006c', bg: '#f8f5fb' },
-      { n: 'زيتون ونحاس', a: '#5f7a4a', b: '#b5651d', bg: '#f7f8f0' },
-      { n: 'نيلي وقرنفلي', a: '#2f4b7c', b: '#ef6f91', bg: '#f4f6fb' },
-      { n: 'توت', a: '#7b2d5e', b: '#d4548a', bg: '#fbf4f8' },
-      { n: 'فيروز ومرجان', a: '#1b998b', b: '#e8615f', bg: '#f1f9f7' },
-      { n: 'عنبر', a: '#9c5a2d', b: '#cf8b4a', bg: '#fbf6f0' },
-      { n: 'ياقوت', a: '#9b1b30', b: '#c39a3f', bg: '#fbf4f4' },
-      { n: 'سماء وليل', a: '#34558b', b: '#6ea6d4', bg: '#f4f7fb' },
-      { n: 'نعناع وليمون', a: '#2e8b6f', b: '#b9a233', bg: '#f3faf7' },
-      { n: 'خزامى', a: '#7c5aa8', b: '#cf8fbe', bg: '#f9f6fc' },
-      { n: 'صدأ ورماد', a: '#a94418', b: '#6b7280', bg: '#faf6f3' },
-      { n: 'أزرق ملكي وذهب', a: '#22407f', b: '#c9a227', bg: '#f5f6fc' }
-    ];
-  }
+  dayThemes() { return this.content('dayThemes', []); }
 
   // رقم اليوم المحلّي — يتبدَّل عند منتصف الليل لا عند توقيت غرينتش.
   // رقم اليوم مبنيّ على Y/M/D في فضاء UTC: يتقدّم ٨٦٤٠٠٠٠٠ بالضبط
@@ -572,14 +659,17 @@ class Component extends DCLogic {
 
   dayIndex() { return this.dayNum(new Date(this.state.now)); }
 
+  // الطول يُقرأ آلياً، فإضافةُ عبارةٍ إلى content/days.js تكفي وحدَها.
+  // والحارس هنا لأنّ % على مصفوفةٍ فارغة يُنتج NaN، و all[NaN] يُنتج undefined،
+  // وأوّل قراءةٍ لخاصّيةٍ منه تُسقط التصيير كلَّه.
   todayPair() {
     const all = this.dayPairs();
-    return all[this.dayIndex() % all.length];
+    return all.length ? all[this.dayIndex() % all.length] : this.FALLBACK_PAIR;
   }
 
   dayTheme() {
     const all = this.dayThemes();
-    return all[this.dayIndex() % all.length];
+    return all.length ? all[this.dayIndex() % all.length] : this.FALLBACK_THEME;
   }
 
   pagesLeft() {
@@ -638,10 +728,14 @@ class Component extends DCLogic {
 
   renderVals() {
     const opened = this.state.opened;
+    const page = Math.min(this.state.page, this.pageCount() - 1);
     const unlocked = this.isUnlocked();
     const nxt = this.nextOccasion();
     const iss = this.currentIssue();
-    const cc = this.occasionCopy()[nxt.o.key];
+    // لو تلف content/occasions.js لكانت nxt هي null و nxt.o.key تُسقط الصفحة
+    // كلَّها. البديل نصٌّ فارغ: الصفحة تظهر ناقصةً بدل أن تختفي.
+    const FALLBACK_COPY = { lockedTitle: '', inName: '', openTitle: '', openDeck: '', button: '', line: '' };
+    const cc = (nxt && this.occasionCopy()[nxt.o.key]) || FALLBACK_COPY;
     const left = Math.max(0, this.target() - this.state.now);
     const s = Math.floor(left / 1000);
     return {
@@ -658,12 +752,12 @@ class Component extends DCLogic {
       coverTitle: unlocked ? cc.openTitle : cc.lockedTitle,
       coverDeck: unlocked
         ? cc.openDeck
-        : 'عددٌ خاصٌّ يصدر لكِ في ' + cc.inName + '، ' + nxt.o.date +
+        : 'عددٌ خاصٌّ يصدر لكِ في ' + cc.inName + '، ' + (nxt ? nxt.o.date : '') +
           '. وحتّى ذلك اليوم، لكِ هنا صفحةٌ كلَّ صباح.',
       openLabel: cc.button,
-      opensOn: 'يُفتح العدد يوم ' + nxt.o.date,
-      occasionName: iss ? iss.o.name : nxt.o.name,
-      occasionLine: (iss ? this.occasionCopy()[iss.o.key] : cc).line,
+      opensOn: nxt ? 'يُفتح العدد يوم ' + nxt.o.date : '',
+      occasionName: iss ? iss.o.name : (nxt ? nxt.o.name : ''),
+      occasionLine: ((iss ? this.occasionCopy()[iss.o.key] : cc) || FALLBACK_COPY).line,
       issueLine: 'اليومُ ' + this.pad(this.daysSince('wedding') ?? 0) + ' من الزواج',
       firstBirthday: (unlocked && iss && iss.o.key === 'birthday' && iss.y === 2026)
         ? 'أوّلُ عيدِ ميلادٍ لكِ وأنتِ زوجتي' : '',
@@ -677,7 +771,30 @@ class Component extends DCLogic {
       onOpen: this.open,
       coverTransform: opened ? "rotateX(-96deg) translateY(-6%)" : "none",
       coverOpacity: opened ? 0 : 1,
-      coverPointer: opened ? "none" : "auto"
+      coverPointer: opened ? "none" : "auto",
+
+      // ── تقليب الصفحات ──────────────────────────────────────────────────
+      // العرض بـ display لا بالنزع: الطباعة تحتاجها كلَّها في الشجرة.
+      pg1: page === 0 ? 'block' : 'none',
+      pg2: page === 1 ? 'block' : 'none',
+      pg3: page === 2 ? 'block' : 'none',
+      pageName: (this.pages()[page] || {}).name || '',
+      pageOf: 'صفحة ' + this.ar(page + 1) + ' من ' + this.ar(this.pageCount()),
+      hasPrev: page > 0,
+      hasNext: page < this.pageCount() - 1,
+      prevName: page > 0 ? this.pages()[page - 1].name : '',
+      nextName: page < this.pageCount() - 1 ? this.pages()[page + 1].name : '',
+      onPrev: this.prevPage,
+      onNext: this.nextPage,
+      onP1: this.toPage1,
+      onP2: this.toPage2,
+      onP3: this.toPage3,
+      p1Hint: this.pages()[0].hint,
+      p2Hint: this.pages()[1].hint,
+      p3Hint: this.pages()[2].hint,
+      p1Name: this.pages()[0].name,
+      p2Name: this.pages()[1].name,
+      p3Name: this.pages()[2].name
     };
   }
 }
