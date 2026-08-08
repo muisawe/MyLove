@@ -1,0 +1,24 @@
+/* قواعد هذه الصفحة وحدها
+   مولَّد من الحزمة القديمة بتفكيكٍ لمرّة واحدة — يُحرَّر يدوياً من الآن.
+
+   ── ترتيب السلسلة، وقد تغيّر بالتفكيك ─────────────────────────────────────
+   يحقن dc-runtime ورقتين بنفسه:
+     BASE_CSS       عبر head.prepend()  →  يسبق كلَّ شيء دائماً
+     FULL_PAGE_CSS  عبر head.append()   →  html,body{height:100%;margin:0}
+                                           #dc-root,#dc-root>.sc-host{height:100%}
+   كانت هذه الورقة تُركَّب من <helmet> أثناء التصيير، أي بعد FULL_PAGE_CSS فتغلبه.
+   صارت الآن <link> في الرأس، أي قبله فيغلبها.
+
+   لا أثر اليوم: التعارض الوحيد هو margin:0 بالقيمة نفسها، و height:100% لا
+   تُنازَع هنا. لكنّ أيّ قاعدة جديدة تمسّ height أو margin على html/body — وأخصُّ
+   كتلة @media print — يجب أن تحمل !important، وإلّا ابتلعها FULL_PAGE_CSS بصمت.
+   ─────────────────────────────────────────────────────────────────────── */
+
+html,body{margin:0;padding:0;background:var(--color-bg);overflow:hidden}
+a{color:var(--color-accent-700);text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{color:var(--color-accent-2)}
+@keyframes hb-seal{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes hb-fade{from{opacity:0}to{opacity:1}}
+@keyframes hb-drift{from{transform:translateY(0)}to{transform:translateY(-7px)}}
+@media (forced-colors: active){button{border:2px solid ButtonText}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.001ms!important}}
