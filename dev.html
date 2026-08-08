@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>معمل الحالات — محلّي فقط</title>
+
+<!--
+  ═══ شاشة المعاينة ═══════════════════════════════════════════════════════
+
+  تعرض كلَّ حالةٍ تمرّ بها الصفحة دفعةً واحدة: الأعداد الثلاثة، ودورة القفل
+  كاملةً، والسمات الأربع عشرة، وتوليفات الخصائص.
+
+  مبدآن يحكمان هذا الملف:
+
+  ١. لا يمسّ index.html. يجلبه نصّاً، ويُرقّعه في الذاكرة، ويُمرّره إلى
+     srcdoc. فلا سطر تهيئةٍ ولا فرعَ تصحيحٍ في الصفحة الحقيقية — وبالتالي
+     صفر احتمالٍ لأن يتسرّب شيءٌ من هذا إلى ما تقرؤه هي.
+
+  ٢. لا يعمل إلّا محلياً. الحارس أدناه يرفض العمل على أيّ مضيفٍ غير محلّي،
+     فحتى لو نُشر الملف على GitHub Pages فهو صفحة اعتذار.
+
+  الترقيع ثلاثة أشياء:
+    · الزمن  — Proxy على Date يجعل new Date() و Date.now() تنطلقان من لحظةٍ
+              مختارة وتمشيان منها. لحظةٌ واحدة تتحكّم بالعدّاد وبالمناسبة
+              الجارية وبسمة اليوم وبعبارته معاً، لأنّ كلَّها مشتقّةٌ من
+              dayIndex().
+    · التخزين — localStorage مُستبدَل بذاكرةٍ داخل كلّ إطار، وإلّا تسرّب
+              علَم «فُتحت» بين الإطارات (كلّها على أصلٍ واحد) فأفسد القفل.
+    · الخصائص — قيم data-props الافتراضية تُبدَّل في النصّ قبل الإقلاع.
+-->
+
+<style>
+  :root{
+    --ink:#1a1a1a; --dim:#6b6b6b; --line:#dcdcdc;
+    --bg:#f7f7f6; --card:#fff; --accent:#0088b0; --accent2:#d6006c;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:14px/1.6 ui-sans-serif,-apple-system,'Segoe UI',sans-serif;
+  }
+
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(247,247,246,.94); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:14px clamp(16px,3vw,32px);
+  }
+  .title{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .title h1{margin:0; font-size:17px; font-weight:650}
+  .badge{
+    font-size:11px; padding:2px 9px; border-radius:99px;
+    background:var(--accent2); color:#fff; letter-spacing:.02em;
+  }
+  .title .path{font:12px/1 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--dim)}
+
+  .controls{display:flex; gap:22px; flex-wrap:wrap; align-items:center; margin-top:12px}
+  .group{display:flex; align-items:center; gap:7px}
+  .group > span{font-size:12px; color:var(--dim)}
+  button.opt{
+    font:inherit; font-size:12.5px; cursor:pointer;
+    padding:4px 11px; border:1px solid var(--line); background:var(--card);
+    border-radius:6px; color:var(--ink);
+  }
+  button.opt:hover{border-color:var(--accent)}
+  button.opt[aria-pressed="true"]{background:var(--ink); color:#fff; border-color:var(--ink)}
+  input[type=range]{width:120px; accent-color:var(--accent)}
+
+  main{padding:clamp(16px,3vw,32px)}
+  section{margin-bottom:44px}
+  section > h2{
+    margin:0 0 4px; font-size:15px; font-weight:650;
+    display:flex; align-items:center; gap:10px;
+  }
+  section > h2::after{content:""; flex:1; height:1px; background:var(--line)}
+  section > .note{margin:0 0 18px; font-size:12.5px; color:var(--dim); max-width:70ch}
+
+  .grid{display:flex; flex-wrap:wrap; gap:20px}
+
+  figure{margin:0; display:flex; flex-direction:column; gap:8px}
+  figcaption{font-size:12px; line-height:1.45; max-width:var(--cw)}
+  figcaption b{display:block; font-weight:600; font-size:12.5px}
+  figcaption span{color:var(--dim); font-variant-numeric:tabular-nums}
+  figcaption .tags{margin-top:3px; display:flex; gap:5px; flex-wrap:wrap}
+  figcaption .tags i{
+    font-style:normal; font-size:10.5px; padding:1px 7px; border-radius:4px;
+    background:#ececeb; color:#555;
+  }
+  figcaption .tags i.on{background:var(--accent); color:#fff}
+  figcaption .tags i.open{background:var(--accent2); color:#fff}
+
+  .shell{
+    width:var(--cw); height:var(--ch);
+    border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.06); position:relative;
+  }
+  .shell iframe{
+    width:var(--w); height:var(--h); border:0; display:block;
+    transform:scale(var(--s)); transform-origin:top right;
+  }
+  .shell .pending{
+    position:absolute; inset:0; display:grid; place-items:center;
+    font-size:12px; color:#aaa;
+  }
+
+  #guard{
+    max-width:44ch; margin:22vh auto; text-align:center; padding:0 20px;
+    line-height:1.9;
+  }
+  #guard code{background:#eee; padding:2px 6px; border-radius:4px;
+    font:13px ui-monospace,Menlo,monospace}
+</style>
+</head>
+
+<body>
+
+<div id="guard" hidden>
+  <h1 style="font-size:19px">هذه شاشةٌ محلّية</h1>
+  <p>معمل الحالات لا يعمل إلّا على جهازك. شغّل خادماً في مجلّد المستودع:</p>
+  <p><code>python3 -m http.server 8080</code></p>
+  <p style="color:#6b6b6b;font-size:13px">ثمّ افتح <code>localhost:8080/dev.html</code></p>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <div class="title">
+      <h1>معمل الحالات</h1>
+      <span class="badge">محلّي فقط</span>
+      <span class="path">index.html يُرقَّع في الذاكرة — الملف الأصلي لا يُمسّ</span>
+    </div>
+    <div class="controls">
+      <div class="group" data-ctl="w">
+        <span>المقاس</span>
+        <button class="opt" data-w="375" data-h="812">iPhone SE</button>
+        <button class="opt" data-w="430" data-h="932">iPhone 15</button>
+        <button class="opt" data-w="820" data-h="1180">iPad</button>
+        <button class="opt" data-w="1280" data-h="900">سطح المكتب</button>
+      </div>
+      <div class="group">
+        <span>التصغير</span>
+        <input type="range" id="scale" min="20" max="100" step="5" value="45">
+        <span id="scaleVal" style="font-variant-numeric:tabular-nums">٤٥٪</span>
+      </div>
+      <div class="group">
+        <button class="opt" id="reload">إعادة تحميل الكل</button>
+      </div>
+    </div>
+  </header>
+  <main id="main"></main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── الحارس: لا شيء يعمل خارج الجهاز ────────────────────────────────────
+  var h = location.hostname;
+  var local = location.protocol === 'file:' ||
+    ['localhost', '127.0.0.1', '[::1]', '0.0.0.0', ''].indexOf(h) >= 0 ||
+    /\.local$/.test(h) || /^192\.168\./.test(h) || /^10\./.test(h) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+
+  if (!local) { document.getElementById('guard').hidden = false; return; }
+  document.getElementById('app').hidden = false;
+
+  var ar = function (n) {
+    return String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[+d]; });
+  };
+  var AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو',
+                   'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var stamp = function (t) {
+    var d = new Date(t);
+    return ar(d.getDate()) + ' ' + AR_MONTHS[d.getMonth()] + ' ' + ar(d.getFullYear()) +
+      ' — ' + ar(String(d.getHours()).padStart(2, '0')) + ':' +
+      ar(String(d.getMinutes()).padStart(2, '0'));
+  };
+  // التاريخ إلى طابعٍ زمني محلّي، بنفس حساب at() في الصفحة
+  var at = function (y, m, d, hh, mm) { return new Date(y, m, d, hh || 0, mm || 0, 0).getTime(); };
+
+  // مناسبات الصفحة — نسخةٌ للتسمية فقط، والمصدر الحقيقي في index.html.
+  // ٢٠٢٦ هي سنة الحدث نفسه لا سنة الذكرى: الخطبة ١٧ فبراير ٢٠٢٦ والزواج
+  // ١ يونيو ٢٠٢٦. فأوّل ذكرى لكلٍّ منهما في ٢٠٢٧ — وهي الحالة التي تُعرض.
+  // (لو عُرض عدد الخطبة بتاريخ ٢٠٢٦ لظهر «اليومُ ٠٠ من الزواج»، لأنّ الزواج
+  //  لم يكن قد وقع بعد و daysSince يقصّ السالب إلى صفر.)
+  var ENGAGEMENT = [2027, 1, 17], WEDDING = [2027, 5, 1], BIRTHDAY = [2026, 7, 15];
+
+  // ── الترقيع ─────────────────────────────────────────────────────────────
+  var SOURCE = null;
+
+  function inject(t, props) {
+    return '<base href="' + location.href.replace(/[^/]*$/, '') + '">\n' +
+'<script>(function(){\n' +
+'  var T = ' + t + ', S = Date.now(), RN = Date.now;\n' +
+'  Date.now = function(){ return T + (RN() - S); };\n' +
+'  window.Date = new Proxy(Date, {\n' +
+'    construct: function(Target, a){ return a.length ? new Target(...a) : new Target(Date.now()); }\n' +
+'  });\n' +
+'  var mem = Object.create(null);\n' +
+'  try {\n' +
+'    Object.defineProperty(window, "localStorage", { configurable:true, value:{\n' +
+'      getItem:  function(k){ return k in mem ? mem[k] : null; },\n' +
+'      setItem:  function(k,v){ mem[k] = String(v); },\n' +
+'      removeItem:function(k){ delete mem[k]; },\n' +
+'      clear:    function(){ mem = Object.create(null); },\n' +
+'      key:      function(i){ return Object.keys(mem)[i] || null; },\n' +
+'      get length(){ return Object.keys(mem).length; }\n' +
+'    }});\n' +
+'  } catch(e) {}\n' +
+'})();<\/' + 'script>';
+  }
+
+  function autoOpen() {
+    return '\n<script>(function(){\n' +
+'  var n = 0, iv = setInterval(function(){\n' +
+'    // زرّ الغلاف تحديداً. أوّلُ زرٍّ في الشجرة صار زرَّ الفهرس بعد تقسيم\n' +
+'    // الصفحات، فالضغط عليه يقلّب إلى الصفحة الثانية بدل أن يفتح العدد.\n' +
+'    var cover = Array.prototype.slice.call(document.querySelectorAll("#dc-root div"))\n' +
+'      .filter(function(d){ return getComputedStyle(d).zIndex === "6"; })[0];\n' +
+'    var b = cover && cover.querySelector("button");\n' +
+'    if (b) {\n' +
+'      clearInterval(iv); b.click();\n' +
+'      setTimeout(function(){\n' +
+'        document.querySelectorAll("[data-rise]").forEach(function(e){\n' +
+'          e.style.opacity = "1"; e.style.transform = "none";\n' +
+'        });\n' +
+'        var c = Array.prototype.slice.call(document.querySelectorAll("#dc-root div"))\n' +
+'          .filter(function(d){ return getComputedStyle(d).zIndex === "6"; })[0];\n' +
+'        if (c) { c.style.transition = "none"; c.style.visibility = "hidden"; c.style.opacity = "0"; }\n' +
+'      }, 1400);\n' +
+'    }\n' +
+'    if (++n > 80) clearInterval(iv);\n' +
+'  }, 100);\n' +
+'})();<\/' + 'script>';
+  }
+
+  function build(state) {
+    var html = SOURCE;
+
+    // الخصائص: تُبدَّل قيمها الافتراضية في data-props قبل أن يقرأها المحرّك
+    if (state.unlocked) {
+      html = html.replace('"previewUnlocked":{"editor":"boolean","default":false',
+                          '"previewUnlocked":{"editor":"boolean","default":true');
+    }
+    if (state.motion === false) {
+      html = html.replace('"motion":{"editor":"boolean","default":true',
+                          '"motion":{"editor":"boolean","default":false');
+    }
+    if (state.spot) {
+      html = html.replace('"default":"سماوي","tsType":"string","section":"اللون"',
+                          '"default":"' + state.spot + '","tsType":"string","section":"اللون"');
+    }
+
+    html = html.replace('<head>', '<head>\n' + inject(state.t));
+    if (state.open) html = html.replace('</body>', autoOpen() + '\n</body>');
+    return html;
+  }
+
+  // ── الحالات ─────────────────────────────────────────────────────────────
+  var SECTIONS = [
+    {
+      title: 'الأعداد الثلاثة',
+      note: 'لكلّ مناسبةٍ ستّة نصوصٍ خاصّة بها: عنوان مقفل، وعنوان مفتوح، ومقدّمة، ونصّ الزرّ، وسطر ختام. هنا الغلاف والعدد لكلٍّ منها يوم صدورها.',
+      items: [
+        { label: 'ذكرى الخطبة — الغلاف', t: at.apply(null, ENGAGEMENT.concat([9, 0])), unlocked: 1 },
+        { label: 'ذكرى الخطبة — العدد',  t: at.apply(null, ENGAGEMENT.concat([9, 0])), unlocked: 1, open: 1, motion: false },
+        { label: 'ذكرى الزواج — الغلاف', t: at.apply(null, WEDDING.concat([9, 0])), unlocked: 1 },
+        { label: 'ذكرى الزواج — العدد',  t: at.apply(null, WEDDING.concat([9, 0])), unlocked: 1, open: 1, motion: false },
+        { label: 'عيدُ ميلادها — الغلاف', t: at.apply(null, BIRTHDAY.concat([9, 0])), unlocked: 1 },
+        { label: 'عيدُ ميلادها — العدد',  t: at.apply(null, BIRTHDAY.concat([9, 0])), unlocked: 1, open: 1, motion: false }
+      ]
+    },
+    {
+      title: 'دورة القفل',
+      note: 'العدد مختومٌ حتى منتصف ليل المناسبة محلياً، ثمّ يبقى مفتوحاً سبعة أيام (GRACE_DAYS). بعدها يُقفل ثانيةً — إلّا إن كانت قد فتحته، فيبقى لها. هذه الحالات بلا previewUnlocked، أي القفل الحقيقي يعمل.',
+      items: [
+        { label: 'بعيد — بعد صدور عدد',     t: at(2026, 7, 16, 10, 0) },
+        { label: 'قبل الفتح بيوم',           t: at(2026, 7, 14, 12, 0) },
+        { label: 'آخر دقيقة',                t: at(2026, 7, 14, 23, 59) },
+        { label: 'لحظة الصدور',              t: at(2026, 7, 15, 0, 1) },
+        { label: 'اليوم السابع — آخر المهلة', t: at(2026, 7, 22, 12, 0) },
+        { label: 'اليوم الثامن — أُقفل ثانيةً', t: at(2026, 7, 23, 12, 0) }
+      ]
+    },
+    {
+      title: 'السمات اليومية الأربع عشرة',
+      note: 'القيمة والعبارة تدوران على ٣٠، والسمة اللونية على ١٤ — فالتوليفة لا تتكرّر قبل ٢١٠ أيام. هذه أربعة عشر يوماً متتالياً، أي كلّ سمةٍ مرّة. السمات تُطبَّق على الغلاف وحده؛ العدد يحتفظ بلوحته المطبعية.',
+      items: (function () {
+        var out = [], base = at(2026, 7, 1, 10, 0);
+        for (var i = 0; i < 14; i++) out.push({ label: 'يوم ' + ar(i + 1), t: base + i * 86400000 });
+        return out;
+      })()
+    },
+    {
+      title: 'الخصائص',
+      note: 'ثلاث خصائص يضبطها المؤلّف: اللون المميّز (سماوي/أرجواني)، والحركة، والقفل. الحركة معطّلةً تعني ظهور الأقسام فوراً بلا كشفٍ متدرّج — وهو أيضاً ما يراه من فعّل prefers-reduced-motion.',
+      items: [
+        { label: 'سماوي · حركة',        t: at(2026, 7, 15, 9, 0), unlocked: 1, spot: 'سماوي' },
+        { label: 'أرجواني · حركة',      t: at(2026, 7, 15, 9, 0), unlocked: 1, spot: 'أرجواني' },
+        { label: 'سماوي · بلا حركة',    t: at(2026, 7, 15, 9, 0), unlocked: 1, spot: 'سماوي', motion: false, open: 1 },
+        { label: 'أرجواني · بلا حركة',  t: at(2026, 7, 15, 9, 0), unlocked: 1, spot: 'أرجواني', motion: false, open: 1 }
+      ]
+    }
+  ];
+
+  // ── العرض ───────────────────────────────────────────────────────────────
+  var W = 430, H = 932, S = 0.45;
+  var main = document.getElementById('main');
+
+  // طابورٌ محدود التزامن بدل IntersectionObserver: ثلاثون إطاراً كلٌّ منها
+  // يُقلع React ودورةَ تصيير، فدفعُها معاً يخنق الصفحة. والطابور حتميّ —
+  // لا يعتمد على تقاطعٍ قد لا يُبلَّغ عنه.
+  var CONCURRENCY = 3;
+  var queue = [], active = 0, token = 0;
+
+  function pump(myToken) {
+    while (active < CONCURRENCY && queue.length) {
+      if (myToken !== token) return;              // أُعيد الرسم — اهجر الطابور القديم
+      var job = queue.shift();
+      active++;
+      (function (shell) {
+        var f = shell.querySelector('iframe');
+        var p = shell.querySelector('.pending');
+        var done = false;
+        var finish = function () {
+          if (done || myToken !== token) return;
+          done = true; active--;
+          if (p && p.parentNode) p.remove();
+          pump(myToken);
+        };
+        f.addEventListener('load', function () { setTimeout(finish, 250); }, { once: true });
+        setTimeout(finish, 6000);                 // لا يعلق الطابور على إطارٍ متعثّر
+        try { f.srcdoc = build(JSON.parse(f.dataset.state)); }
+        catch (err) { console.error('[dev] تعذّر بناء الحالة', err); finish(); }
+      })(job);
+    }
+  }
+
+  function render() {
+    main.textContent = '';
+    queue = []; active = 0; token++;
+    var myToken = token;
+
+    SECTIONS.forEach(function (sec) {
+      var s = document.createElement('section');
+      var h2 = document.createElement('h2'); h2.textContent = sec.title;
+      var note = document.createElement('p'); note.className = 'note'; note.textContent = sec.note;
+      var grid = document.createElement('div'); grid.className = 'grid';
+
+      sec.items.forEach(function (it) {
+        var fig = document.createElement('figure');
+
+        var shell = document.createElement('div');
+        shell.className = 'shell';
+        shell.style.setProperty('--w', W + 'px');
+        shell.style.setProperty('--h', H + 'px');
+        shell.style.setProperty('--s', S);
+        shell.style.setProperty('--cw', Math.round(W * S) + 'px');
+        shell.style.setProperty('--ch', Math.round(H * S) + 'px');
+
+        var pending = document.createElement('div');
+        pending.className = 'pending'; pending.textContent = '…';
+        var f = document.createElement('iframe');
+        f.setAttribute('loading', 'lazy');
+        f.dataset.state = JSON.stringify(it);
+        shell.appendChild(f); shell.appendChild(pending);
+
+        var cap = document.createElement('figcaption');
+        cap.style.setProperty('--cw', Math.round(W * S) + 'px');
+        var b = document.createElement('b'); b.textContent = it.label;
+        var sp = document.createElement('span'); sp.textContent = stamp(it.t);
+        var tags = document.createElement('div'); tags.className = 'tags';
+        if (it.unlocked) tags.innerHTML += '<i class="on">مفتوح</i>';
+        if (it.open) tags.innerHTML += '<i class="open">العدد</i>';
+        if (it.motion === false) tags.innerHTML += '<i>بلا حركة</i>';
+        if (it.spot) tags.innerHTML += '<i>' + it.spot + '</i>';
+        cap.appendChild(b); cap.appendChild(sp);
+        if (tags.children.length) cap.appendChild(tags);
+
+        fig.appendChild(shell); fig.appendChild(cap);
+        grid.appendChild(fig);
+        queue.push(shell);
+      });
+
+      s.appendChild(h2); s.appendChild(note); s.appendChild(grid);
+      main.appendChild(s);
+    });
+
+    pump(myToken);
+  }
+
+  // ── الضوابط ─────────────────────────────────────────────────────────────
+  function markWidth() {
+    document.querySelectorAll('[data-ctl="w"] .opt').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(+b.dataset.w === W));
+    });
+  }
+  document.querySelectorAll('[data-ctl="w"] .opt').forEach(function (b) {
+    b.addEventListener('click', function () {
+      W = +b.dataset.w; H = +b.dataset.h; markWidth(); render();
+    });
+  });
+  var range = document.getElementById('scale'), out = document.getElementById('scaleVal');
+  range.addEventListener('input', function () {
+    S = +range.value / 100; out.textContent = ar(range.value) + '٪'; render();
+  });
+  document.getElementById('reload').addEventListener('click', render);
+
+  // ── الإقلاع ─────────────────────────────────────────────────────────────
+  fetch('index.html', { cache: 'no-store' })
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      SOURCE = t;
+      // فحصٌ مبكّر: إن تغيّرت صيغة data-props فالترقيع يصمت بدل أن يخطئ
+      ['"previewUnlocked":{"editor":"boolean","default":false',
+       '"motion":{"editor":"boolean","default":true',
+       '<head>'].forEach(function (needle) {
+        if (t.indexOf(needle) < 0) {
+          console.warn('[dev] لم يُعثر على المرساة، الترقيع لن يعمل: ' + needle);
+        }
+      });
+      out.textContent = ar(range.value) + '٪';
+      markWidth(); render();
+    })
+    .catch(function (e) {
+      main.innerHTML = '<p style="color:#b00">تعذّر جلب index.html — شغّل خادماً محلياً بدل فتح الملف مباشرةً.</p>';
+      console.error(e);
+    });
+})();
+</script>
+</body>
+</html>
